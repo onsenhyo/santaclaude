@@ -16,11 +16,9 @@ import {
   countdownText,
   crossedMilestones,
   daysUntilChristmas,
-  gaugeRuns,
   isPalette,
   santaRows,
 } from './scene'
-import type { Row } from './scene'
 import type { SceneProps } from './scene-client'
 import { SPINNER_WORDS } from './words'
 
@@ -265,32 +263,6 @@ export const register: Register = on => {
     }
 
     return next({ ...e, props: { ...e.props, word } })
-  })
-
-  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const p = await read($, prefs)
-
-    if (!p.isOn || e.props.hasSurvey) {
-      return next(e)
-    }
-    const colors = PALETTES[p.palette]
-    const percent = await read($, snow)
-    const count = await read($, gifts)
-    const { Box, Text } = $.ui.resolve(e)
-    const runs: Row = [
-      { text: '🎅 🎄 ' },
-      { text: countdownText(await read($, days)), color: colors.red },
-      { text: '   ❄ ' },
-      ...gaugeRuns(percent, 20, colors),
-      { text: ` ${percent}%` },
-      { text: `   🎁 ${count} ${count === 1 ? 'commit' : 'commits'}` },
-    ]
-
-    return (
-      <Box>
-        <RunsLine Text={Text} runs={runs} />
-      </Box>
-    )
   })
 
   on('ui.render', { component: 'Placed' }, async ($, e, next) => {

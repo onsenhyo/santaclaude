@@ -8,7 +8,6 @@ import {
   countdownText,
   crossedMilestones,
   daysUntilChristmas,
-  gaugeRuns,
   hopLift,
   isInside,
   santaRows,
@@ -134,12 +133,6 @@ test('presents under the tree', () => {
 test('Christmas day sparkles', () => {
   expect(all(scene({ isChristmas: true }))).toContain('✦')
   expect(all(scene({ isChristmas: false }))).not.toContain('✦')
-})
-
-test('gauge', () => {
-  const runs = gaugeRuns(50, 20, colors)
-  expect(Array.from(text(runs)).length).toBe(20)
-  expect(count(text(runs), '█')).toBe(10)
 })
 
 test('the welcome card Santa keeps one height through a hop', () => {

@@ -493,13 +493,3 @@ export const santaRows = (colors: Colors, lift = 0): Row[] => {
 /** Rows `santaRows` draws, whatever the lift. */
 export const SANTA_CARD_ROWS = SANTA_CELLS.length + HOP_HEADROOM
 export const SANTA_CARD_COLUMNS = SANTA_CELLS[0]?.length ?? 0
-
-/** The snow gauge in the band: filled cells then empty ones. */
-export const gaugeRuns = (percent: number, cells: number, colors: Colors): Row => {
-  const filled = Math.max(0, Math.min(cells, Math.round((percent / 100) * cells)))
-
-  return [
-    { text: '█'.repeat(filled), color: colors.snow },
-    { text: '░'.repeat(cells - filled), dim: true },
-  ]
-}
