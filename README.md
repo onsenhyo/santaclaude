@@ -2,6 +2,8 @@
 
 A Christmas mod for Claude Code: snow piles up as your context window fills.
 
+![Santa Claude in Claude Code: the welcome card and the Christmas pane](docs/hero.png)
+
 | Fresh session (context 0%) | Halfway (context 53%) |
 | --- | --- |
 | ![The Christmas pane with no snow yet](docs/pane-empty.gif) | ![The Christmas pane with snow piled up](docs/pane.gif) |
