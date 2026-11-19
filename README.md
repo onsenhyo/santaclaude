@@ -2,7 +2,9 @@
 
 A Christmas mod for Claude Code: snow piles up as your context window fills.
 
-![The Christmas pane](docs/pane.gif)
+| Fresh session (context 0%) | Halfway (context 53%) |
+| --- | --- |
+| ![The Christmas pane with no snow yet](docs/pane-empty.gif) | ![The Christmas pane with snow piled up](docs/pane.gif) |
 
 ## What you get
 
