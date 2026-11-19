@@ -1,8 +1,9 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register } from 'claude-code'
+import type { ElementConstructor, EngineInterface, Register, TextProps } from 'claude-code'
 
 import type { Prefs } from '../types'
 import { specOf, suggest } from './commands'
+import { pickGreeting } from './greetings'
 import { RunsLine } from './runs'
 import type { SantaProps } from './santa-client'
 import {
@@ -18,6 +19,7 @@ import {
   isPalette,
   santaRows,
 } from './scene'
+import type { Colors } from './scene'
 import type { SceneProps } from './scene-client'
 import { SPINNER_WORDS } from './words'
 
@@ -31,7 +33,15 @@ const DEFAULT_PREFS: Prefs = { isOn: true, palette: 'classic', paneAuto: false, 
 const snow = atom({ plugin: 'santaclaude', key: 'snow' } as const, 0)
 const gifts = atom({ plugin: 'santaclaude', key: 'gifts' } as const, 0)
 const days = atom({ plugin: 'santaclaude', key: 'days' } as const, 0)
+const greeting = atom({ plugin: 'santaclaude', key: 'greeting' } as const, '')
 const prefs = atom({ plugin: 'santaclaude', key: 'prefs' } as const, DEFAULT_PREFS)
+
+/** The countdown in white, or the day itself in red. */
+const Countdown = ({ Text, days, colors }: { Text: ElementConstructor<TextProps>; days: number; colors: Colors }) => (
+  <Text bold color={days === 0 ? colors.red : colors.white}>
+    {countdownText(days)}
+  </Text>
+)
 
 const COMMIT = /\bgit\b[^\n|;&]*\bcommit\b/
 
@@ -53,6 +63,8 @@ const firstWord = (args: string): string => args.trim().toLowerCase().split(/\s+
 
 export const register: Register = on => {
   let word = SPINNER_WORDS[0] ?? 'Wrapping presents'
+  // The welcome card keeps the line it was first drawn with; the pane's title takes a new one each turn.
+  const welcome = pickGreeting(Math.random())
 
   on('session.start', async ($, e, next) => {
     const stored = (await $.store.get(PREFS_KEY)) as Partial<Prefs> | undefined
@@ -62,6 +74,7 @@ export const register: Register = on => {
     await update($, days, () => countdown)
     const usage = await $.session.usage()
     await update($, snow, () => usage.context.percent ?? 0)
+    await update($, greeting, () => pickGreeting(Math.random()))
 
     await $.command.register({ name: 'santaclaude-pane', ...specOf('santaclaude-pane') })
     await $.command.register({ name: 'santaclaude-color', ...specOf('santaclaude-color') })
@@ -138,6 +151,7 @@ export const register: Register = on => {
 
   on('turn.start', async ($, e, next) => {
     word = SPINNER_WORDS[Math.floor(Math.random() * SPINNER_WORDS.length)] ?? word
+    await update($, greeting, () => pickGreeting(Math.random()))
 
     return next(e)
   })
@@ -227,7 +241,6 @@ export const register: Register = on => {
     const left = await read($, days)
     const elements = $.ui.resolve(e)
     const { Box, Text } = elements
-    const line = left === 0 ? 'Merry Christmas!' : `${countdownText(left)} until Christmas`
     const santa: SantaProps = { colors }
 
     return (
@@ -248,9 +261,10 @@ export const register: Register = on => {
           </Box>
         )}
         <Box flexDirection="column" paddingBottom={1}>
-          <Text bold>Ho ho ho, Santa Claude is here.</Text>
+          <Text bold>{welcome}</Text>
           <Text>
-            <Text color={colors.red}>{line}</Text>
+            <Countdown Text={Text} days={left} colors={colors} />
+            {left === 0 ? null : <Text dimColor> until Christmas</Text>}
             <Text dimColor> · type /santaclaude- for commands</Text>
           </Text>
         </Box>
@@ -279,10 +293,8 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Text>
-          <Text bold color={colors.red}>
-            {countdownText(left)}
-          </Text>
-          {left === 0 ? null : <Text dimColor> until Christmas</Text>}
+          <Countdown Text={Text} days={left} colors={colors} />
+          {left === 0 ? null : <Text dimColor> {await read($, greeting)}</Text>}
         </Text>
         {'Client' in elements ? (
           <elements.Client key="scene" module="./scene-client.tsx" props={scene} width={width} height={height} />

@@ -16,6 +16,8 @@ declare module 'claude-code' {
       gifts: number
       /** Days until the next Christmas, 0 on the day. */
       days: number
+      /** The Christmas line in the pane's title, picked anew each turn. */
+      greeting: string
       prefs: Prefs
     }
   }

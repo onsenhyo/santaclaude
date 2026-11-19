@@ -11,11 +11,12 @@ target=$(date +%s -d "$year-12-25")
 # Rounded, so a daylight saving shift of an hour never costs a day.
 days=$(( (target - today + 43200) / 86400 ))
 
+white='\033[1;38;2;244;244;244m'
 red='\033[38;2;229;72;77m'
 reset='\033[0m'
 
 if [ "$days" -eq 0 ]; then
   printf "  🎅 ${red}Merry Christmas!${reset}\n"
 else
-  printf "  Merry Xmas 🎅 ${red}D-%s${reset}\n" "$days"
+  printf "  Merry Xmas 🎅 ${white}D-%s${reset}\n" "$days"
 fi
