@@ -149,13 +149,72 @@ export const SCENE_HEIGHT = 18
 export const FRAME_MS = 100
 export const FRAMES_PER_TICK = 7
 
-/** A hop, frame by frame: pixels off the ground, up and down with a little bounce on landing. */
-const HOP = [2, 4, 5, 6, 6, 5, 4, 2, 0, 1, 1, 0]
-/** Rows a drawing keeps clear above a sprite so a hop never changes its height. */
-export const HOP_HEADROOM = Math.ceil(Math.max(...HOP) / 2)
+type Side = -1 | 0 | 1
 
-/** Pixels off the ground `frame` frames into a hop that started on `start`, or null once landed. */
-export const hopLift = (start: number, frame: number): number | null => HOP[frame - start] ?? null
+/**
+ * How a sprite is held for one frame: `lift` pixels off the ground, turned clockwise by `turn`
+ * quarters, its head leaning `lean` pixels to the side, and the whole of it `shift` cells over.
+ */
+export type Pose = { lift: number; turn: 0 | 1 | 2 | 3; lean: Side; shift: Side }
+export const STANDING: Pose = { lift: 0, turn: 0, lean: 0, shift: 0 }
+
+const lifted = (lift: number): Pose => ({ ...STANDING, lift })
+
+/** What Santa and the snowman can do, frame by frame. */
+export const MOTIONS = {
+  /** Up and down, with a little bounce on landing. */
+  hop: [2, 4, 5, 6, 6, 5, 4, 2, 0, 1, 1, 0].map(lifted),
+  /** A side flip: up, a full turn in the air, and down on his feet. */
+  flip: (
+    [
+      [2, 0],
+      [4, 1],
+      [5, 1],
+      [6, 2],
+      [6, 2],
+      [5, 3],
+      [4, 3],
+      [2, 0],
+      [0, 0],
+      [1, 0],
+      [0, 0],
+    ] as const
+  ).map(([lift, turn]): Pose => ({ ...STANDING, lift, turn })),
+  /** Rocking side to side, twice: he sways over and his head leans further. */
+  sway: Array.from({ length: 2 }, () =>
+    (
+      [
+        [-1, 0],
+        [-1, -1],
+        [-1, -1],
+        [-1, 0],
+        [0, 0],
+        [1, 0],
+        [1, 1],
+        [1, 1],
+        [1, 0],
+        [0, 0],
+      ] as const
+    ).map(([lean, shift]): Pose => ({ ...STANDING, lean, shift })),
+  ).flat(),
+} satisfies Record<string, readonly Pose[]>
+export type Motion = keyof typeof MOTIONS
+export const MOTION_NAMES = Object.keys(MOTIONS) as Motion[]
+
+/** A motion under way: which one, and the frame it started on. */
+export type Move = { motion: Motion; start: number }
+
+/** A move of any kind starting on `frame`, chosen by `random` in [0, 1). */
+export const randomMove = (frame: number, random: number): Move => ({
+  motion: MOTION_NAMES[Math.floor(random * MOTION_NAMES.length)] ?? 'hop',
+  start: frame,
+})
+
+/** The pose `frame` frames into a move, or null once it is over. */
+export const poseAt = (move: Move, frame: number): Pose | null => MOTIONS[move.motion][frame - move.start] ?? null
+
+/** Rows a drawing keeps clear above a sprite so no motion ever changes its height. */
+export const HOP_HEADROOM = Math.ceil(Math.max(...Object.values(MOTIONS).flat().map(pose => pose.lift)) / 2)
 const TREE_COL = 1
 const SANTA_COL = 25
 const SNOWMAN_COL = 18
@@ -206,8 +265,8 @@ export type SceneInput = {
   sleigh: number | null
   /** Shapes the drifts: a new seed is a new snowfield. */
   seed: number
-  /** Pixels Santa and the snowman are off the ground, mid-hop; null leaves the snowman out. */
-  lift: { santa: number; snowman: number | null }
+  /** How Santa and the snowman are standing this frame; null leaves the snowman out. */
+  pose: { santa: Pose; snowman: Pose | null }
 }
 
 /** Cells of the scene, as rows and columns from its top left, ends included. */
@@ -232,7 +291,7 @@ export const buildScene = ({
   rudolph,
   sleigh,
   seed,
-  lift,
+  pose,
 }: SceneInput): Scene => {
   const W = Math.max(1, Math.min(SCENE_WIDTH, width))
   const H = SCENE_HEIGHT
@@ -353,9 +412,9 @@ export const buildScene = ({
   // A little snowman keeps watch between the tree and Santa, when he is asked for.
   const snowmanBottom = perchRow(span(SNOWMAN_COL, SNOWMAN_WIDTH))
 
-  if (lift.snowman !== null) {
-    const cells = standingCells(SNOWMAN_PIXELS, lift.snowman)
-    drawCells(cells, snowmanBottom - (cells.length - 1), SNOWMAN_COL)
+  if (pose.snowman !== null) {
+    const cells = posedCells(SNOWMAN_PIXELS, pose.snowman)
+    drawCells(cells, snowmanBottom - (cells.length - 1), SNOWMAN_COL + pose.snowman.shift)
   }
 
   if (rudolph !== null) {
@@ -370,8 +429,8 @@ export const buildScene = ({
 
   // Santa stands on top of the pile, over the snow under his feet.
   const santaBottom = perchRow(SANTA_FEET.map(col => SANTA_COL + col))
-  const santaCells = standingCells(SANTA_PIXELS, lift.santa)
-  drawCells(santaCells, santaBottom - (santaCells.length - 1), SANTA_COL)
+  const santaCells = posedCells(SANTA_PIXELS, pose.santa)
+  drawCells(santaCells, santaBottom - (santaCells.length - 1), SANTA_COL + pose.santa.shift)
 
   if (sleigh !== null) {
     sprite(SLEIGH, 1, sleigh)
@@ -381,7 +440,7 @@ export const buildScene = ({
     rows: grid.map(line => toRuns(line, colors)),
     hits: {
       santa: restingRect(SANTA_CELLS, santaBottom, SANTA_COL),
-      snowman: lift.snowman === null ? null : restingRect(SNOWMAN_CELLS, snowmanBottom, SNOWMAN_COL),
+      snowman: pose.snowman === null ? null : restingRect(SNOWMAN_CELLS, snowmanBottom, SNOWMAN_COL),
     },
   }
 }
@@ -478,20 +537,45 @@ const standingCells = (pixels: readonly string[], lift = 0): (Cell | null)[][] =
   return pixelCells(rows.length % 2 === 1 ? [blank, ...rows] : rows)
 }
 
+/** A square sprite turned clockwise by quarters. */
+const turned = (pixels: readonly string[], turn: number): string[] => {
+  let rows = [...pixels]
+
+  for (let t = 0; t < turn; t++) {
+    rows = rows.map((_, r) => rows.map(row => row[r] ?? '.').reverse().join(''))
+  }
+
+  return rows
+}
+
+/** Leans the upper half of a sprite by `lean` pixels, keeping its width: the head sways, the feet stay. */
+const leant = (pixels: readonly string[], lean: number): string[] =>
+  pixels.map((row, r) =>
+    lean === 0 || r >= pixels.length / 2 ? row : lean > 0 ? '.' + row.slice(0, -1) : row.slice(1) + '.',
+  )
+
+/** A sprite's cells in a pose: turned, leant, then lifted. Turns are for square sprites only. */
+const posedCells = (pixels: readonly string[], pose: Pose): (Cell | null)[][] =>
+  standingCells(leant(turned(pixels, pose.turn), pose.lean), pose.lift)
+
 const SANTA_CELLS = standingCells(SANTA_PIXELS)
 const SNOWMAN_CELLS = standingCells(SNOWMAN_PIXELS)
 /** Columns of Santa's lowest cell row that hold something: where his feet are. */
 const SANTA_FEET = (SANTA_CELLS[SANTA_CELLS.length - 1] ?? []).flatMap((cell, col) => (cell === null ? [] : [col]))
 
-/** Santa Claude alone, for the welcome card, `lift` pixels into a hop under a fixed headroom. */
-export const santaRows = (colors: Colors, lift = 0): Row[] => {
-  const cells = standingCells(SANTA_PIXELS, lift)
+/** Santa Claude alone, for the welcome card, in a pose under a fixed headroom and a cell of room each side. */
+export const santaRows = (colors: Colors, pose: Pose = STANDING): Row[] => {
+  const cells = posedCells(SANTA_PIXELS, pose)
   const blank = (SANTA_CELLS[0] ?? []).map(() => null)
-  const padded = [...Array.from({ length: SANTA_CELLS.length + HOP_HEADROOM - cells.length }, () => blank), ...cells]
+  const padded = [...Array.from({ length: SANTA_CARD_ROWS - cells.length }, () => blank), ...cells]
+  const clear: Cell = { ch: ' ', tone: 'none' }
+  const space = (n: number): Cell[] => Array.from({ length: n }, () => clear)
 
-  return padded.map(line => toRuns(line.map(cell => cell ?? { ch: ' ', tone: 'none' }), colors))
+  return padded.map(line =>
+    toRuns([...space(1 + pose.shift), ...line.map(cell => cell ?? clear), ...space(1 - pose.shift)], colors),
+  )
 }
 
-/** Rows `santaRows` draws, whatever the lift. */
+/** Rows and columns `santaRows` draws, whatever the pose. */
 export const SANTA_CARD_ROWS = SANTA_CELLS.length + HOP_HEADROOM
-export const SANTA_CARD_COLUMNS = SANTA_CELLS[0]?.length ?? 0
+export const SANTA_CARD_COLUMNS = (SANTA_CELLS[0]?.length ?? 0) + 2

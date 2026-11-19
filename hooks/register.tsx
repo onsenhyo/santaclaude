@@ -8,6 +8,7 @@ import { RunsLine } from './runs'
 import type { SantaProps } from './santa-client'
 import {
   PALETTES,
+  STANDING,
   SANTA_CARD_COLUMNS,
   SANTA_CARD_ROWS,
   SCENE_HEIGHT,
@@ -307,7 +308,7 @@ export const register: Register = on => {
             rudolph: null,
             sleigh: null,
             seed: 0,
-            lift: { santa: 0, snowman: p.showSnowman ? 0 : null },
+            pose: { santa: STANDING, snowman: p.showSnowman ? STANDING : null },
           })
             .rows.slice(SCENE_HEIGHT - height)
             .map(row => <RunsLine Text={Text} runs={row} />)

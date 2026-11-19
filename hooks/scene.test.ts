@@ -3,13 +3,16 @@ import { expect, test } from 'claude-code/testing'
 import {
   HOP_HEADROOM,
   PALETTES,
+  SANTA_CARD_COLUMNS,
   SANTA_CARD_ROWS,
   buildScene,
   countdownText,
   crossedMilestones,
   daysUntilChristmas,
-  hopLift,
+  MOTIONS,
+  STANDING,
   isInside,
+  poseAt,
   santaRows,
 } from './scene'
 import type { Row, SceneInput } from './scene'
@@ -27,7 +30,7 @@ const build = (over: Partial<SceneInput>) =>
     rudolph: null,
     sleigh: null,
     seed: 7,
-    lift: { santa: 0, snowman: null },
+    pose: { santa: STANDING, snowman: null },
     ...over,
   })
 const scene = (over: Partial<SceneInput>) => build(over).rows
@@ -68,7 +71,7 @@ test('milestones crossed', () => {
 
 test('scene is 18 rows of the given width', () => {
   for (const width of [40, 60, 20]) {
-    const rows = scene({ width, percent: 42, gifts: 2, tick: 3, rudolph: 8, sleigh: 5, lift: { santa: 6, snowman: 6 } })
+    const rows = scene({ width, percent: 42, gifts: 2, tick: 3, rudolph: 8, sleigh: 5, pose: { santa: { ...STANDING, lift: 6 }, snowman: { ...STANDING, lift: 6 } } })
     expect(rows.length).toBe(18)
     for (const row of rows) {
       expect(Array.from(text(row)).length).toBe(Math.min(40, width))
@@ -97,7 +100,7 @@ test('the tree has no trunk', () => {
 test('the snowman stays inside unless asked for', () => {
   // His carrot nose is the only orange between the tree (cols 1-15) and Santa (from col 25).
   const noses = (snowman: number | null, percent: number) =>
-    scene({ percent, lift: { santa: 0, snowman } }).flatMap(row =>
+    scene({ percent, pose: { santa: STANDING, snowman: snowman === null ? null : STANDING } }).flatMap(row =>
       cells(row)
         .slice(16, 25)
         .filter(cell => isColored(cell, colors.orange)),
@@ -109,12 +112,36 @@ test('the snowman stays inside unless asked for', () => {
   expect(build({}).hits.snowman).toBeNull()
 })
 
+const santaIn = (pose: Partial<typeof STANDING>) => scene({ pose: { santa: { ...STANDING, ...pose }, snowman: null } })
+
 test('a hop lifts Santa off the snow and lands him back', () => {
-  const santaTop = (lift: number) => firstRowWith(scene({ lift: { santa: lift, snowman: null } }), colors.red, 25, 40)
+  const santaTop = (lift: number) => firstRowWith(santaIn({ lift }), colors.red, 25, 40)
   expect(santaTop(6)).toBe(santaTop(0) - 3)
   expect(santaTop(1)).toBe(santaTop(0))
-  expect(hopLift(10, 10)).toBeGreaterThan(0)
-  expect(hopLift(10, 1000)).toBeNull()
+  expect(poseAt({ motion: 'hop', start: 10 }, 10)?.lift).toBeGreaterThan(0)
+  expect(poseAt({ motion: 'hop', start: 10 }, 1000)).toBeNull()
+})
+
+test('every motion ends where it began: standing on his feet', () => {
+  for (const frames of Object.values(MOTIONS)) {
+    expect(frames[frames.length - 1]).toEqual(STANDING)
+  }
+})
+
+test('a flip turns Santa upside down mid-air', () => {
+  // His red hat is the first red from the top standing, and sinks to the bottom upside down.
+  const hatRow = (turn: 0 | 2) => firstRowWith(santaIn({ turn }), colors.red, 25, 40)
+  expect(hatRow(2)).toBeGreaterThan(hatRow(0))
+  expect(MOTIONS.flip.some(pose => pose.turn === 2)).toBe(true)
+})
+
+test('a sway leans his head and keeps his feet', () => {
+  const rows = (lean: -1 | 0 | 1) => santaIn({ lean }).map(text)
+  const [left, still, right] = [rows(-1), rows(0), rows(1)]
+  expect(left).not.toEqual(still)
+  expect(right).not.toEqual(still)
+  expect(left[left.length - 1]).toBe(still[still.length - 1])
+  expect(right[right.length - 1]).toBe(still[still.length - 1])
 })
 
 test('the pointer finds Santa where he stands', () => {
@@ -137,7 +164,11 @@ test('Christmas day sparkles', () => {
 
 test('the welcome card Santa keeps one height through a hop', () => {
   expect(santaRows(colors).length).toBe(SANTA_CARD_ROWS)
-  expect(santaRows(colors, 6).length).toBe(SANTA_CARD_ROWS)
+  for (const pose of Object.values(MOTIONS).flat()) {
+    const rows = santaRows(colors, pose)
+    expect(rows.length).toBe(SANTA_CARD_ROWS)
+    expect(rows.map(row => Array.from(text(row)).length)).toEqual(rows.map(() => SANTA_CARD_COLUMNS))
+  }
   expect(HOP_HEADROOM).toBe(3)
 })
 
