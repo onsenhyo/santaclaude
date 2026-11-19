@@ -18,5 +18,5 @@ reset='\033[0m'
 if [ "$days" -eq 0 ]; then
   printf "  🎅 ${red}Merry Christmas!${reset}\n"
 else
-  printf "  Merry Xmas 🎅 ${white}D-%s${reset}\n" "$days"
+  printf "  Santa Claude 🎅 ${white}D-%s${reset}\n" "$days"
 fi

@@ -63,7 +63,7 @@ The typeahead completes each command's arguments. Your settings are remembered a
 `extras/xmas-statusline.sh` prints one line with the countdown, and on December 25 a greeting:
 
 ```
-  Merry Xmas 🎅 D-36
+  Santa Claude 🎅 D-36
 ```
 
 If you have no status line yet, point Claude Code at it in `~/.claude/settings.json`:
