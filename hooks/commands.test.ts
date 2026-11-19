@@ -11,13 +11,7 @@ test('arguments complete after their command', () => {
 })
 
 test('commands without arguments complete nothing', () => {
-  expect(suggest('/santaclaude-quiz x', 18, 'x')).toEqual([])
   expect(suggest('/santaclaude-on x', 16, 'x')).toEqual([])
-})
-
-test('answer rows show the open question choices', () => {
-  const rows = suggest('/santaclaude-answer b', 20, 'b', ['git log', 'git reflog', 'git blame', 'git stash'])
-  expect(rows).toEqual([{ text: 'b', description: 'git reflog' }])
 })
 
 test('other prompts get nothing', () => {
@@ -29,5 +23,5 @@ test('other prompts get nothing', () => {
 test('argument hints', () => {
   expect(specOf('santaclaude-pane').argumentHint).toBe('[auto|manual]')
   expect(specOf('santaclaude-color').argumentHint).toBe('classic|frost|candle')
-  expect(specOf('santaclaude-quiz').argumentHint).toBeUndefined()
+  expect(specOf('santaclaude-on').argumentHint).toBeUndefined()
 })

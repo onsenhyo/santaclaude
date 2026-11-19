@@ -6,8 +6,6 @@ type Command = { description: string; args?: readonly Arg[]; isArgOptional?: tru
 
 export type CommandName =
   | 'santaclaude-pane'
-  | 'santaclaude-quiz'
-  | 'santaclaude-answer'
   | 'santaclaude-color'
   | 'santaclaude-snowman'
   | 'santaclaude-on'
@@ -26,11 +24,6 @@ export const COMMANDS: Record<CommandName, Command> = {
       { name: 'auto', about: 'Open the pane by itself on wide terminals' },
       { name: 'manual', about: 'Open the pane only on /santaclaude-pane' },
     ],
-  },
-  'santaclaude-quiz': { description: 'Santa Claude: a Christmas dev quiz question' },
-  'santaclaude-answer': {
-    description: 'Santa Claude: answer the open quiz question',
-    args: ['a', 'b', 'c', 'd'].map(name => ({ name, about: `Answer ${name}` })),
   },
   'santaclaude-color': {
     description: 'Santa Claude: change the decoration colors',
@@ -59,16 +52,8 @@ export const specOf = (name: CommandName): { description: string; argumentHint?:
 
 const isCommandName = (name: string): name is CommandName => name in COMMANDS
 
-/**
- * Typeahead rows for the argument at the cursor: `token` starts at `start` in `text`.
- * `choices` labels the answer rows with the open quiz question's choices.
- */
-export const suggest = (
-  text: string,
-  start: number,
-  token: string,
-  choices?: readonly string[],
-): PromptAutocompleteSuggestion[] => {
+/** Typeahead rows for the argument at the cursor: `token` starts at `start` in `text`. */
+export const suggest = (text: string, start: number, token: string): PromptAutocompleteSuggestion[] => {
   const named = text.slice(0, start).match(/^\/(\S+)\s+$/)?.[1]?.toLowerCase() ?? ''
 
   if (!isCommandName(named)) {
@@ -77,9 +62,6 @@ export const suggest = (
   const word = token.toLowerCase()
 
   return (COMMANDS[named].args ?? [])
-    .map((arg, i) => ({
-      text: arg.name,
-      description: named === 'santaclaude-answer' ? (choices?.[i] ?? arg.about) : arg.about,
-    }))
+    .map(arg => ({ text: arg.name, description: arg.about }))
     .filter(row => row.text.startsWith(word))
 }

@@ -16,8 +16,6 @@ declare module 'claude-code' {
       gifts: number
       /** Days until the next Christmas, 0 on the day. */
       days: number
-      /** The quiz question waiting for /santaclaude-answer, by id. */
-      quiz: string | null
       prefs: Prefs
     }
   }

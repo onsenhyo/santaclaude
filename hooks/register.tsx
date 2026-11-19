@@ -3,7 +3,6 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { Prefs } from '../types'
 import { specOf, suggest } from './commands'
-import { formatQuestion, parseChoice, pickQuestion, questionById } from './quiz'
 import { RunsLine } from './runs'
 import type { SantaProps } from './santa-client'
 import {
@@ -27,13 +26,11 @@ const PANE = 'santaclaude'
 const PANE_TITLE = '🎄 Santa Claude'
 const WELCOME = 'welcome'
 const PREFS_KEY = 'prefs'
-const SOLVED_KEY = 'solved'
 const DEFAULT_PREFS: Prefs = { isOn: true, palette: 'classic', paneAuto: false, showSnowman: false }
 
 const snow = atom({ plugin: 'santaclaude', key: 'snow' } as const, 0)
 const gifts = atom({ plugin: 'santaclaude', key: 'gifts' } as const, 0)
 const days = atom({ plugin: 'santaclaude', key: 'days' } as const, 0)
-const quiz = atom({ plugin: 'santaclaude', key: 'quiz' } as const, null)
 const prefs = atom({ plugin: 'santaclaude', key: 'prefs' } as const, DEFAULT_PREFS)
 
 const COMMIT = /\bgit\b[^\n|;&]*\bcommit\b/
@@ -52,41 +49,6 @@ const savePrefs = async ($: EngineInterface, change: (p: Prefs) => Prefs): Promi
   return next
 }
 
-/** Quiz ids answered right, across sessions: new questions come first. */
-const loadSolved = async ($: EngineInterface): Promise<string[]> => {
-  const stored = await $.store.get(SOLVED_KEY)
-
-  return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string') : []
-}
-
-const answerQuiz = async ($: EngineInterface, arg: string): Promise<string> => {
-  const open = await read($, quiz)
-  const question = open === null ? undefined : questionById(open)
-
-  if (question === undefined) {
-    return 'No question is open. Ask one with /santaclaude-quiz'
-  }
-  const choice = parseChoice(arg)
-
-  if (choice === null) {
-    return 'Answer with /santaclaude-answer a, b, c or d'
-  }
-  await update($, quiz, () => null)
-
-  if (choice !== question.answer) {
-    const right = `${'abcd'[question.answer]}) ${question.choices[question.answer]}`
-
-    return `❌ Not quite. It was ${right}\n${question.explain}\nTry another with /santaclaude-quiz`
-  }
-  const solved = await loadSolved($)
-
-  if (!solved.includes(question.id)) {
-    await $.store.set(SOLVED_KEY, [...solved, question.id])
-  }
-
-  return `🎉 Correct! ${question.explain}`
-}
-
 const firstWord = (args: string): string => args.trim().toLowerCase().split(/\s+/)[0] ?? ''
 
 export const register: Register = on => {
@@ -102,8 +64,6 @@ export const register: Register = on => {
     await update($, snow, () => usage.context.percent ?? 0)
 
     await $.command.register({ name: 'santaclaude-pane', ...specOf('santaclaude-pane') })
-    await $.command.register({ name: 'santaclaude-quiz', ...specOf('santaclaude-quiz') })
-    await $.command.register({ name: 'santaclaude-answer', ...specOf('santaclaude-answer') })
     await $.command.register({ name: 'santaclaude-color', ...specOf('santaclaude-color') })
     await $.command.register({ name: 'santaclaude-snowman', ...specOf('santaclaude-snowman') })
     await $.command.register({ name: 'santaclaude-on', ...specOf('santaclaude-on') })
@@ -184,9 +144,7 @@ export const register: Register = on => {
 
   on('prompt.autocomplete', async ($, e, next) => {
     const beneath = await next(e)
-    const open = await read($, quiz)
-    const choices = open === null ? undefined : questionById(open)?.choices
-    const mine = suggest(e.text, e.start, e.token, choices)
+    const mine = suggest(e.text, e.start, e.token)
 
     return mine.length === 0 ? beneath : { suggestions: [...beneath.suggestions, ...mine] }
   })
@@ -211,15 +169,6 @@ export const register: Register = on => {
 
     return { text: '🎄 Opened the Christmas pane' }
   })
-
-  on('command.run', { command: 'santaclaude-quiz' }, async $ => {
-    const question = pickQuestion(await loadSolved($), Math.random(), (await read($, quiz)) ?? undefined)
-    await update($, quiz, () => question.id)
-
-    return { text: formatQuestion(question) }
-  })
-
-  on('command.run', { command: 'santaclaude-answer' }, async ($, e) => ({ text: await answerQuiz($, firstWord(e.args)) }))
 
   on('command.run', { command: 'santaclaude-color' }, async ($, e) => {
     const arg = firstWord(e.args)
