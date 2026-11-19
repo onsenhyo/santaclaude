@@ -2,7 +2,7 @@
 
 A Christmas mod for Claude Code: snow piles up as your context window fills.
 
-![Santa Claude in Claude Code: the welcome card and the Christmas pane](docs/hero.png)
+![Santa Claude in Claude Code: the welcome card and the Christmas pane](docs/hero.gif)
 
 | Fresh session (context 0%) | Halfway (context 53%) |
 | --- | --- |
@@ -18,8 +18,11 @@ A Christmas mod for Claude Code: snow piles up as your context window fills.
 
 - **Christmas spinner words** while Claude works: about 48 of them, from "Wrapping presents…" to "Waking Rudolph…".
 - **Toasts** when the snow (context) passes 50%, 80% and 95%, and when compaction melts it away.
-- **A Christmas developer quiz**: 40 questions on git, C#/Unity, TypeScript and the web, and general computer science.
-- **Three color themes**: classic, frost and candle.
+- **Three color themes** (`/santaclaude-color`): classic, frost and candle.
+
+  | classic | frost | candle |
+  | --- | --- | --- |
+  | ![The pane in the classic colors](docs/theme-classic.png) | ![The pane in the frost colors](docs/theme-frost.png) | ![The pane in the candle colors](docs/theme-candle.png) |
 
 The countdown uses your machine's local date, so it rolls over at your midnight.
 
@@ -49,8 +52,6 @@ The repository is private for now, so installing needs read access to it on GitH
 | --- | --- |
 | `/santaclaude-pane` | Open or close the Christmas pane |
 | `/santaclaude-pane auto` \| `manual` | Open the pane by itself on wide terminals, or only on `/santaclaude-pane` |
-| `/santaclaude-quiz` | Ask a Christmas developer quiz question |
-| `/santaclaude-answer a` \| `b` \| `c` \| `d` | Answer the open question |
 | `/santaclaude-color classic` \| `frost` \| `candle` | Change the decoration colors |
 | `/santaclaude-snowman on` \| `off` | Show or hide the snowman |
 | `/santaclaude-on` | Turn the decorations on |
