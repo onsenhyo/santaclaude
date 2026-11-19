@@ -14,9 +14,14 @@ A Christmas mod for Claude Code: snow piles up as your context window fills.
 
   | classic | frost | candle |
   | --- | --- | --- |
-  | ![The pane in the classic colors](docs/theme-classic.png) | ![The pane in the frost colors](docs/theme-frost.png) | ![The pane in the candle colors](docs/theme-candle.png) |
+  | ![The pane in the classic colors](docs/theme-classic.gif) | ![The pane in the frost colors](docs/theme-frost.gif) | ![The pane in the candle colors](docs/theme-candle.gif) |
 
 - **The Christmas pane** (`/santaclaude-pane`): a pixel-art tree with twinkling bulbs standing on a snowfield that rises as your context fills, a present under it for every commit this session, and the countdown to Christmas. Santa Claude stands on the snow and now and then hops, does a side flip or sways side to side, and does one whenever you hover over or click him. Snow drifts down, Rudolph wanders by from time to time, and on December 25 Santa's sleigh flies over.
+
+  The pane's height is adjustable. Make it shorter and the scene gives up its sky first, keeping the tree, Santa Claude and the snow in view.
+
+  ![The pane getting shorter and taller](docs/pane-height.gif)
+
 - **A little snowman**, hidden by default (`/santaclaude-snowman on`). He hops when hovered or clicked.
 - **A welcome card** with Santa Claude when a session starts. He hops, flips and sways there too, now and then and when you hover over or click him.
 - **100 Christmas greetings**, from "Ho ho ho, Santa Claude is here." to "Rudolph found your lost semicolon.": a new one on the welcome card each session and in the pane's title each turn, next to the countdown.
