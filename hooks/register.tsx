@@ -282,7 +282,7 @@ export const register: Register = on => {
     const santa: SantaProps = { colors }
 
     return (
-      <Box flexDirection="row" borderStyle="round" paddingX={1} gap={2}>
+      <Box flexDirection="row" gap={2} alignItems="flex-end">
         {'Client' in elements ? (
           <elements.Client
             key="santa"
@@ -298,7 +298,7 @@ export const register: Register = on => {
             ))}
           </Box>
         )}
-        <Box flexDirection="column" justifyContent="center">
+        <Box flexDirection="column" paddingBottom={1}>
           <Text bold>Ho ho ho, Santa Claude is here.</Text>
           <Text>
             <Text color={colors.red}>{line}</Text>
