@@ -1,0 +1,58 @@
+// What the spinner says while Claude works, one picked per turn.
+export const SPINNER_WORDS = [
+  // The workshop
+  'Wrapping presents',
+  'Tying ribbons',
+  'Curling ribbon',
+  'Taping gift tags',
+  'Hammering toys',
+  'Painting toy soldiers',
+  'Stuffing teddy bears',
+  'Sorting the toy shelves',
+  'Bribing the elves',
+  'Holding an elf stand-up',
+  // Santa's paperwork
+  'Checking the nice list',
+  'Checking it twice',
+  'Reading letters to Santa',
+  'Updating the naughty list',
+  'Double-checking addresses',
+  // The sleigh
+  'Sleigh-riding',
+  'Waking Rudolph',
+  'Polishing the sleigh',
+  'Harnessing reindeer',
+  'Feeding the reindeer',
+  'Plotting the sleigh route',
+  'Sliding down chimneys',
+  'Tiptoeing past the cat',
+  // The house
+  'Trimming the tree',
+  'Untangling lights',
+  'Hanging stockings',
+  'Hanging mistletoe',
+  'Lighting the fireplace',
+  'Topping the tree',
+  'Stringing popcorn',
+  // The kitchen
+  'Baking cookies',
+  'Frosting gingerbread',
+  'Building a gingerbread house',
+  'Warming the cocoa',
+  'Adding marshmallows',
+  'Sneaking a cookie',
+  'Mulling cider',
+  // Outside
+  'Building snowmen',
+  'Catching snowflakes',
+  'Shoveling snow',
+  'Starting a snowball fight',
+  'Making snow angels',
+  // Carols
+  'Humming carols',
+  'Jingling bells',
+  'Rocking around the tree',
+  'Decking the halls',
+  'Fa-la-la-ing',
+  'Caroling door to door',
+]

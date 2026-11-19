@@ -1,0 +1,12 @@
+{
+  "name": "santaclaude",
+  "owner": { "name": "onsenhyo" },
+  "description": "Santa Claude: a Christmas mod for Claude Code.",
+  "plugins": [
+    {
+      "name": "santaclaude",
+      "source": "./",
+      "description": "Christmas for Claude Code: snow piles up as your context window fills, with a tree, Santa Claude and a countdown to Christmas."
+    }
+  ]
+}

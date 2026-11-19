@@ -1,0 +1,11 @@
+{
+  "name": "santaclaude",
+  "version": "1.0.0",
+  "description": "Christmas for Claude Code: snow piles up as your context window fills, with a tree, Santa Claude and a countdown to Christmas.",
+  "author": { "name": "onsenhyo" },
+  "homepage": "https://github.com/onsenhyo/santaclaude",
+  "repository": "https://github.com/onsenhyo/santaclaude",
+  "license": "MIT",
+  "keywords": ["christmas", "theme", "fun", "context"],
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,7 @@
+bash.exe.stackdump
+*.stackdump
+.DS_Store
+*.log
+node_modules/
+.claude-plugin/types/
+.claude/settings.local.json
