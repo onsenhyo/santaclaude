@@ -324,6 +324,8 @@ export const register: Register = on => {
       colors,
     }
     const width = Math.min(SCENE_WIDTH, e.props.bodyColumns)
+    // A short pane keeps the ground: the scene gives up rows from its sky, under the title and above the footer.
+    const height = Math.max(1, Math.min(SCENE_HEIGHT, e.props.scroll.bodyRows - 2))
 
     return (
       <Box flexDirection="column">
@@ -334,7 +336,7 @@ export const register: Register = on => {
           {left === 0 ? null : <Text dimColor> until Christmas</Text>}
         </Text>
         {'Client' in elements ? (
-          <elements.Client key="scene" module="./scene-client.tsx" props={scene} width={width} height={SCENE_HEIGHT} />
+          <elements.Client key="scene" module="./scene-client.tsx" props={scene} width={width} height={height} />
         ) : (
           // A surface without surface modules gets the scene as a still frame.
           buildScene({
@@ -345,7 +347,9 @@ export const register: Register = on => {
             sleigh: null,
             seed: 0,
             lift: { santa: 0, snowman: p.showSnowman ? 0 : null },
-          }).rows.map(row => <RunsLine Text={Text} runs={row} />)
+          })
+            .rows.slice(SCENE_HEIGHT - height)
+            .map(row => <RunsLine Text={Text} runs={row} />)
         )}
         <Text dimColor>❄ context {percent}%</Text>
       </Box>

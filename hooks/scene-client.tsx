@@ -105,11 +105,14 @@ const SceneClient: ClientModule<SceneProps, State> = (props, surface) => {
     lift: { santa: lift(s.hops.santa), snowman: props.showSnowman ? lift(s.hops.snowman) : null },
   })
 
+  // A region shorter than the scene shows its lower rows: the sky goes first, the ground stays.
+  const hidden = Math.max(0, scene.rows.length - (surface.rows || scene.rows.length))
+
   // Hovering over or clicking Santa or the snowman makes them hop.
   surface.onPointer(event => {
     const now = surface.state ?? s
     const start = (current: number | null, rect: Rect | null) =>
-      current === null && isInside(rect, event.y, event.x) ? now.frame : current
+      current === null && isInside(rect, event.y + hidden, event.x) ? now.frame : current
     const santa = start(now.hops.santa, scene.hits.santa)
     const snowman = start(now.hops.snowman, scene.hits.snowman)
 
@@ -120,7 +123,7 @@ const SceneClient: ClientModule<SceneProps, State> = (props, surface) => {
 
   return (
     <Box flexDirection="column">
-      {scene.rows.map(row => (
+      {scene.rows.slice(hidden).map(row => (
         <RunsLine Text={Text} runs={row} />
       ))}
     </Box>
