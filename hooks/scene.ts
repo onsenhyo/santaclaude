@@ -11,10 +11,11 @@ export type Colors = {
   orange: string
   white: string
   hat: string
+  coal: string
   brown: string
 }
 
-const SHARED = { orange: '#d97757', white: '#f4f4f4', hat: '#5a5a5a' }
+const SHARED = { orange: '#d97757', white: '#f4f4f4', hat: '#5a5a5a', coal: '#111111' }
 
 export const PALETTES: Record<Palette, Colors> = {
   classic: { ...SHARED, red: '#e5484d', green: '#3fa35a', gold: '#f5c84b', blue: '#5aa9e6', snow: '#eef4ff', trunk: '#8a5a3b', brown: '#a0703c' },
@@ -80,14 +81,14 @@ const TREE_PIXELS = [
 ]
 const TREE_WIDTH = 15
 
-// Santa Claude as square pixels, two to a cell (R red, W white, O orange, . clear).
+// Santa Claude as square pixels, two to a cell (R red, W white, O orange, K coal-black eyes, . clear).
 // Drawn by hand in the Santa Claude Sprite editor.
 const SANTA_PIXELS = [
   '...RRRRRW.',
   '..RRRRRR..',
   '.WWWWWWWW.',
   '.OOOOOOOO.',
-  '.O.OOOO.O.',
+  '.OKOOOOKO.',
   'OOOOOOOOOO',
   '.WWWWWWWW.',
   '..WWWWWW..',
@@ -95,11 +96,11 @@ const SANTA_PIXELS = [
   '..........',
 ]
 
-// A little snowman, drawn by hand in the sprite editor: H coal eyes, O carrot nose, B twig arms.
+// A little snowman, drawn by hand in the sprite editor: K coal eyes, O carrot nose, B twig arms.
 const SNOWMAN_PIXELS = [
   '.......',
   '..WWW..',
-  '..HWH..',
+  '..KWK..',
   '..WOW..',
   '.BWWWB.',
   '.WWWWW.',
@@ -129,6 +130,7 @@ const TONE_OF: Record<string, Tone> = {
   W: 'white',
   O: 'orange',
   H: 'hat',
+  K: 'coal',
   B: 'brown',
   G: 'gold',
   E: 'green',
